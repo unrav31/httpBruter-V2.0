@@ -1,0 +1,1 @@
+用于测试chromedp和go-rod的截图并发性能。
