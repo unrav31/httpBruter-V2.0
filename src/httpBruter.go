@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/fatih/color"
 	"github.com/panjf2000/ants/v2"
+	"github.com/projectdiscovery/clistats"
 	"go.mongodb.org/mongo-driver/mongo"
 	"httpBruter/pkg/database"
 	"httpBruter/pkg/finger"
@@ -96,9 +97,18 @@ func main() {
 	//输出统计信息
 	if arg.Stats {
 		stats.Statics(arg)
+
 	}
 
 	NormalPool(requestList, arg)
+	if arg.Clistats != nil {
+		defer func(Clistats *clistats.Statistics) {
+			err := Clistats.Stop()
+			if err != nil {
+				log.Fatal("[x] 统计信息停止失败")
+			}
+		}(arg.Clistats)
+	}
 
 }
 func NormalPool(requestList []string, arg *options.Args) {

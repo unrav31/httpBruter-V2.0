@@ -34,6 +34,7 @@ type Params struct {
 	HTTPSURL        string // 存放HTTPSURL，用于标记是否为https
 	HTTPURL         string // 存放HTTPURL，用于标记是否为http
 	FallbackURL     string // 存放fallback的URL，必定是80端口
+	RequestURL      string // 存放实际请求的URL
 	RetryTimes      int
 	Timeout         time.Duration
 	Cookie          *http.Cookie
@@ -66,6 +67,7 @@ type Response struct {
 // Request 请求逻辑函数
 func (p *Params) Request(URL string, responseList []*Response, args *options.Args) []*Response {
 
+	p.RequestURL = URL
 	response := &Response{}
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	jar, _ := cookiejar.New(nil)
@@ -188,9 +190,16 @@ func (p *Params) MakeURL(RAW string, args *options.Args) {
 		if isIP(RAW) {
 			reg := regexp.MustCompile(`(\d+\.\d+\.\d+\.\d+)`)
 			p.PortURL = reg.FindString(RAW)
+
+			//以冒号分割，如果元素为一个，说明不存在端口号
+
+		}
+
+		if len(strings.Split(RAW, ":")) == 2 {
+			p.DefaultURL = RAW + ":" + "443"
 		}
 		//并包含443端口，而且开启了fallback参数
-		if strings.Contains(RAW, ":443") && args.NoFallback {
+		if strings.Contains(p.DefaultURL, ":443") && args.NoFallback {
 			p.FallbackURL = strings.Replace(p.DefaultURL, "https://", "http://", -1)
 			p.FallbackURL = strings.Replace(p.FallbackURL, ":443", ":80", -1)
 		}
@@ -278,7 +287,7 @@ func (p *Params) Retry(URL string, err error, args *options.Args) interface{} {
 			//统计一条错误
 			args.Clistats.IncrementCounter("Error", 1)
 		}
-		errors.HandleRequestErrors(p.DefaultURL, err, args.Debug)
+		errors.HandleRequestErrors(p.RequestURL, err, args.Debug)
 	}
 	return nil
 }

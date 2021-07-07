@@ -121,7 +121,7 @@ func getHeaders(responseList []*http.Response) (string, error) {
 		headerContent, e := json.Marshal(responseList[i].Header)
 
 		if e != nil {
-			fmt.Printf("[!] 获取指纹时头部解析失败 %v", responseList[i].Header)
+			fmt.Printf("[!] 获取指纹时响应头解析失败 %v", responseList[i].Header)
 			return "", e
 		} else {
 			allHeaderInOneStr += string(headerContent)

@@ -42,9 +42,11 @@ func Runner(url string, arg *options.Args) {
 	params.MakeURL(url, arg)
 	//默认的https请求
 	responseList = params.Request(params.DefaultURL, responseList, arg)
+
 	//nofallback请求
 	if params.FallbackURL != "" {
 		responseList = append(params.Request(params.FallbackURL, responseList, arg)[:])
+
 	}
 
 	if len(responseList) == 0 {
@@ -156,4 +158,11 @@ func Runner(url string, arg *options.Args) {
 			color.CyanString("%s", runewidth.FillRight(output.ContentLength, 10)),
 		)
 	}
+	defer func() {
+		for i := 0; i < len(responseList); i++ {
+			for j := 0; j < len(responseList[i].ResponseList); j++ {
+				responseList[i].ResponseList[j].Body.Close()
+			}
+		}
+	}()
 }

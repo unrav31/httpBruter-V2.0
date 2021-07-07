@@ -79,6 +79,14 @@ func HandleRequestErrors(url string, err error, debug bool) {
 	} else if strings.Contains(err.Error(), "application") || strings.Contains(err.Error(), "permission") {
 		color.Red("[x] 指定chrome程序无效")
 		os.Exit(0)
+	} else if strings.Contains(err.Error(), "TLS handshake") {
+		fmt.Printf("%s ", url)
+		color.Red("[x] 连接错误(TLS握手超时)")
+
+	} else if strings.Contains(err.Error(), "ERR_SSL_VERSION") {
+		fmt.Printf("%s ", url)
+		color.Red("[x] 连接错误(TLS握手超时)")
+
 	} else {
 		color.Red("[x] 其他错误，请排查", url, err.Error())
 		log.Fatal(err)
